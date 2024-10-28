@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>病人家庭關係結果</title>
+</head>
+<body>
+    <h1>病人 <%= pid %> 的家庭關係</h1>
+    <a href="/">返回查詢頁面</a>
+    <div>
+        <% if (error) { %>
+            <p style="color: red;"><%= error %></p>
+        <% } else { %>
+            <h2>病人資料</h2>
+            <p>姓名: <%= patient.pname %></p>
+            <p>出生日期: <%= patient.pdate %></p>
+            <p>電話: <%= patient.pphone %></p>
+            <p>VIP: <%= patient.pvip === 'yes' ? '是' : '否' %></p>
+
+            <h2>家庭關係</h2>
+            <% if (relationships.length === 0) { %>
+                <p>沒有找到相關家庭關係。</p>
+            <% } else { %>
+                <% relationships.forEach(function(rel) { %>
+                    <div>
+                        <h3>配對碼: <%= rel.pair_code %></h3>
+                        <p>關係類型: <%= rel.relationship_type %></p>
+                        <p>病人: <%= rel.pid_1 %></p>
+                        <p>病人: <%= rel.pid_2 %></p>
+                    </div>
+                    <hr>
+                <% }) %>
+            <% } %>
+        <% } %>
+    </div>
+</body>
+</html>

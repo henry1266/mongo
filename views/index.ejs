@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Update</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    /* CSS 樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background-color: white; /* 預設背景為白色 */
+    }
+    h1 {
+      color: #333;
+    }
+    .content-container {
+      display: flex;
+      align-items: flex-start;
+      width: 80%;
+    }
+    .table-container {
+      width: 60%;
+      margin-right: 20px;
+    }
+    .info-table, .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .info-table th, .results-table th, .info-table td, .results-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .info-table th, .results-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    /* 工具按鈕容器 */
+    .tools-container {
+      width: 20%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .tool-button {
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tool-button:hover {
+      background-color: #0056b3;
+    }
+    /* 懸浮區域樣式 */
+    .floating-area {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 45rem;
+      padding: 45px;
+      background-color: red;
+      color: white;
+      border-radius: 10px;
+      text-align: center;
+      opacity: 0.8; /* 設置透明度 */
+      font-size: 1.5rem; /* 增加字體大小 */
+    }
+    /* 右側工具按鈕位置調整 */
+    .right-buttons {
+      position: fixed;
+      right: 20rem;
+      top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    /* 右側按鈕變大，字體變大 */
+    .right-buttons .tool-button {
+      width: 20rem;
+      height: 60px;
+      font-size: 1.5rem; /* 增加字體大小 */
+    }
+  </style>
+</head>
+<body>
+  <div class="content-container">
+    <div class="table-container">
+      <h1>最新資料</h1>
+      <!-- 病人資訊表格-->
+      <table class="info-table">
+        <tr>
+          <th>PID</th>
+          <td id="pid">Loading...</td>
+        </tr>
+        <tr>
+          <th>姓名</th>
+          <td id="name">Loading...</td>
+        </tr>
+        <tr>
+          <th>處方類型</th>
+          <td id="pretype">Loading...</td>
+        </tr>
+      </table>
+
+      <!-- 藥品清單表格 -->
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>藥品名稱</th>
+            <th>健保碼</th>
+            <th>服藥頻率</th>
+            <th>數量</th>
+          </tr>
+        </thead>
+        <tbody id="results">
+          <tr>
+            <td colspan="4">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  <!-- 右側控制懸浮區域的按鈕 -->
+  <div class="right-buttons">
+    <button class="tool-button" onclick="toggleFloatingArea()">處方修改</button>
+    <button class="tool-button" onclick="hideFloatingArea()">取消修改</button>
+  </div>
+
+  <!-- 懸浮區域 -->
+  <div id="floatingArea" class="floating-area">
+    處方修改中 請稍後...
+  </div>
+
+  <script>
+    const socket = io();
+
+    // 接收 data_update 事件，並重置背景顏色
+    socket.on('data_update', (data) => {
+      document.body.style.backgroundColor = 'white'; // 重置背景顏色為白色
+
+      // 填入病人資訊
+      document.getElementById('pid').innerText = data.pid;
+      document.getElementById('name').innerText = data.name;
+      document.getElementById('pretype').innerText = data.pretype;
+
+      // 填入藥品清單
+      const resultsTable = document.getElementById('results');
+      resultsTable.innerHTML = ''; // 清空表格內容
+      data.results.forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.dname}</td>
+          <td>${item.dinsuranceCode}</td>
+          <td>${item.df}</td>
+          <td>${item.dcount}</td>
+        `;
+        resultsTable.appendChild(row);
+      });
+    });
+
+
+    // 顯示/隱藏懸浮區域
+    function toggleFloatingArea() {
+      const floatingArea = document.getElementById('floatingArea');
+      const isVisible = floatingArea.style.display === 'block';
+      // 廣播顯示/隱藏狀態到伺服器
+      socket.emit('toggle_floating_area', !isVisible);
+    }
+
+    // 專門隱藏懸浮區域
+    function hideFloatingArea() {
+      socket.emit('toggle_floating_area', false); // 發送隱藏狀態
+    }
+
+    // 接收來自伺服器的懸浮區域顯示狀態
+    socket.on('floating_area_status', (isVisible) => {
+      const floatingArea = document.getElementById('floatingArea');
+      floatingArea.style.display = isVisible ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>
