@@ -39,7 +39,7 @@ async function run() {
       res.render('index', { lastUpdate: lastUpdate ? lastUpdate.data : null }); // 將最新的資料傳給前端
     });
 
-    // Socket.IO 連線事件
+    // Socket.IO 連線
     io.on('connection', async (socket) => {
       console.log('a user connected');
 
