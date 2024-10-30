@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 const app = express();
 const port = 5000;
 
-// 設置 EJS 作為模板引擎
+// 設置 EJS 作為模板
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
